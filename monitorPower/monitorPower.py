@@ -1,4 +1,7 @@
 import os
+import datetime
+import time
+import psutil
 import smtplib
 
 
@@ -6,6 +9,10 @@ def readFile(fpath: str):
     with open(fpath, 'r') as f:
         content = f.readlines()
     return content
+
+
+def get_current_weekday():
+    return datetime.datetime.now().weekday()
 
 
 class Monitor():
@@ -34,11 +41,31 @@ class Monitor():
         From: {}
         Subject: {}
         {}
-        """.format(self.senderGmail, self.senderEmail, subject, text)
+        """.format(self.senderGmail, self.senderGmail, subject, text)
 
-        server.sendmail(self.senderGmail, [self.senderEmail], body)
-        print ('email sent')
+        server.sendmail(self.senderGmail, self.senderGmail, body)
+        server.quit()
+
 
 if __name__ == '__main__':
+    FREQUENCY = 1
+
     m = Monitor()
-    m.sendGmail("Hi there. This is a test!", "Test Message")
+    m.sendGmail(text="A monitor is setup to monitor your power supply. An email will be sent to this address when the power supply cuts off.", subject="Test Message")
+
+    current_weekday = get_current_weekday()
+
+    while True:
+        power = psutil.sensors_battery()
+
+        if not power.power_plugged:
+            m.sendGmail(text=str(power), subject="Power Supply Lost")
+            break
+        
+        if current_weekday is not get_current_weekday():
+            current_weekday = get_current_weekday()
+            m.sendGmail(text=str(power), subject="Daily Power Supply Update")
+
+        print(str(power))
+        time.sleep(FREQUENCY)
+
