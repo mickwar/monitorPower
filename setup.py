@@ -8,5 +8,5 @@ setup(name='monitorPower',
       author_email='luiarthur@gmail.com',
       license='MIT',
       packages=['monitorPower'],
-      install_requires=['psutil']
+      install_requires=['psutil'],
       zip_safe=False)
